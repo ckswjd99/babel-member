@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting List</title>
+    <style>
+        .meeting {
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the admin page</h1>
+
+    <!-- Menu bar: Home, Quarter List, Member List -->
+    <nav>
+        <button onclick="window.location.href='/'">Home</button>
+        <br/>
+        <button onclick="window.location.href='/user/list.html'">User List</button>
+        <button onclick="window.location.href='/user/add.html'">User Add</button>
+        <button onclick="window.location.href='/user/modify.html'">User Modify</button>
+        <button onclick="window.location.href='/user/delete.html'">User Delete</button>
+        <br/>
+        <button onclick="window.location.href='/quarter/list.html'">Quarter List</button>
+        <button onclick="window.location.href='/quarter/add.html'">Add Quarter</button>
+        <button onclick="window.location.href='/quarter/modify.html'">Modify Quarter</button>
+        <button onclick="window.location.href='/quarter/delete.html'">Delete Quarter</button>
+        <br/>
+        <button onclick="window.location.href='/meeting/list.html'">Meeting List</button>
+        <button onclick="window.location.href='/meeting/add.html'">Add Meeting</button>
+        <button onclick="window.location.href='/meeting/modify.html'">Modify Meeting</button>
+        <button onclick="window.location.href='/meeting/delete.html'">Delete Meeting</button>
+    </nav>
+
+    <h2>Meeting List</h2>
+
+    <ul id="meetings"></ul>
+
+    <script>
+        async function fetchQuarters() {
+            const response = await fetch('/quarters');
+            return await response.json();
+        }
+
+        async function fetchMeetings() {
+            const response = await fetch('/meetings');
+            return await response.json();
+        }
+
+        async function displayMeetings() {
+            const quarters = await fetchQuarters();
+            const meetings = await fetchMeetings();
+            const meetingsUl = document.getElementById('meetings');
+
+            // Clear existing meeting list
+            while (meetingsUl.firstChild) {
+                meetingsUl.removeChild(meetingsUl.firstChild);
+            }
+
+            meetings.forEach(meeting => {
+                const meetingLi = document.createElement('li');
+                meetingLi.className = 'meeting';
+                const quarter = quarters.find(q => q.id === meeting.quarterId);
+                const quarterInfo = quarter ? `Year: ${quarter.year}, Quarter: ${quarter.quarter}` : 'Quarter information not available';
+                meetingLi.innerText = `${quarterInfo}, Meeting ${meeting.number}: ${meeting.bookName} by ${meeting.bookAuthor} on ${meeting.date}`;
+                meetingsUl.appendChild(meetingLi);
+            });
+        }
+
+        displayMeetings();
+    </script>
+</body>
+</html>

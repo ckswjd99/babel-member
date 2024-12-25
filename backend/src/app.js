@@ -10,6 +10,8 @@ import { DatabaseManager } from './database/dbManager.js';
 
 import { HomeRouter } from './routes/home.js';
 import { MemberRouter } from './routes/member.js';
+import { QuarterRouter } from './routes/quarter.js';
+import { MeetingRouter } from './routes/meeting.js';
 
 const app = express();
 const port = 3000;
@@ -20,6 +22,8 @@ const databaseManager = new DatabaseManager();
 // Routes
 const homeRouter = new HomeRouter();
 const memberRouter = new MemberRouter(databaseManager);
+const quarterRouter = new QuarterRouter(databaseManager);
+const meetingRouter = new MeetingRouter(databaseManager);
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -29,8 +33,9 @@ app.use(express.static('src/html'));
 app.use(express.static('src/html/user'));
 
 app.use('/', homeRouter.router());
-// app.use('/view', viewRouter.router());
 app.use('/members', memberRouter.router());
+app.use('/quarters', quarterRouter.router());
+app.use('/meetings', meetingRouter.router());
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

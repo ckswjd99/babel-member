@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Quarter</title>
+</head>
+<body>
+    <h1>Welcome to the admin page</h1>
+
+    <!-- Menu bar: Home, Quarter List, Add Quarter -->
+    <nav>
+        <button onclick="window.location.href='/'">Home</button>
+        <br/>
+        <button onclick="window.location.href='/user/list.html'">User List</button>
+        <button onclick="window.location.href='/user/add.html'">User Add</button>
+        <button onclick="window.location.href='/user/modify.html'">User Modify</button>
+        <button onclick="window.location.href='/user/delete.html'">User Delete</button>
+        <br/>
+        <button onclick="window.location.href='/quarter/list.html'">Quarter List</button>
+        <button onclick="window.location.href='/quarter/add.html'">Add Quarter</button>
+        <button onclick="window.location.href='/quarter/modify.html'">Modify Quarter</button>
+        <button onclick="window.location.href='/quarter/delete.html'">Delete Quarter</button>
+        <br/>
+        <button onclick="window.location.href='/meeting/list.html'">Meeting List</button>
+        <button onclick="window.location.href='/meeting/add.html'">Add Meeting</button>
+        <button onclick="window.location.href='/meeting/modify.html'">Modify Meeting</button>
+        <button onclick="window.location.href='/meeting/delete.html'">Delete Meeting</button>
+    </nav>
+
+    <h2>Add Quarter</h2>
+    <form id="add-quarter-form" method="post" action="/quarters">
+        <label for="year">Year:</label>
+        <input type="number" id="year" name="year" required><br>
+
+        <label for="quarter">Quarter:</label>
+        <input type="number" id="quarter" name="quarter" required><br>
+
+        <label for="memo">Memo:</label>
+        <textarea id="memo" name="memo"></textarea><br>
+
+        <button id="add-quarter-submit" type="submit">Add Quarter</button>
+    </form>
+    
+    <h2>Quarter List</h2>
+    <ul id="quarter-list"></ul>
+
+    <script>
+        const updateQuarterList = () => {
+            // clear quarter list
+            const quarterList = document.getElementById('quarter-list');
+            while (quarterList.firstChild) {
+                quarterList.removeChild(quarterList.firstChild);
+            }
+
+            fetch('/quarters/')
+                .then(response => response.json())
+                .then(data => {
+                    const quarterList = document.getElementById('quarter-list');
+    
+                    console.log(data);
+    
+                    data.forEach(quarter => {
+                        const li = document.createElement('li');
+                        const contentString = `Year: ${quarter.year}, Quarter: ${quarter.quarter}, Memo: ${quarter.memo}`;
+                        li.textContent = contentString;
+
+                        quarterList.appendChild(li);
+                    });
+                });
+        }
+        
+        const addQuarterForm = document.getElementById('add-quarter-form');
+        const addQuarterSubmit = document.getElementById('add-quarter-submit');
+
+        addQuarterForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(addQuarterForm);
+            const data = {};
+
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            fetch('/quarters/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+
+            // clear form
+            addQuarterForm.reset();
+            updateQuarterList();
+        });
+
+        updateQuarterList();
+    </script>
+
+</body>
+</html>

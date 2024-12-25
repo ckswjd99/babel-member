@@ -22,12 +22,6 @@
 // id: integer, primary key
 // year: integer, not null
 // quarter: integer, not null
-// createdAt: datetime, not null, default current timestamp
-// updatedAt: datetime, not null, default current timestamp
-
-// QuarterMemo table
-// id: integer, primary key
-// quarterId: integer, not null
 // memo: text, utf-8, not null
 // createdAt: datetime, not null, default current timestamp
 // updatedAt: datetime, not null, default current timestamp
@@ -48,7 +42,7 @@
 // bookAuthor: text, utf-8, not null
 // genre: text, utf-8, not null
 // leaderId: integer, not null
-// paperLink: text, utf-8, not null
+// paperLink: text, utf-8, can be null
 // createdAt: datetime, not null, default current timestamp
 // updatedAt: datetime, not null, default current timestamp
 
@@ -96,15 +90,6 @@ const createQuarterTable = `
         id INTEGER PRIMARY KEY,
         year INTEGER NOT NULL,
         quarter INTEGER NOT NULL,
-        createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-`;
-
-const createQuarterMemoTable = `
-    CREATE TABLE IF NOT EXISTS QuarterMemo (
-        id INTEGER PRIMARY KEY,
-        quarterId INTEGER NOT NULL,
         memo TEXT NOT NULL,
         createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -131,7 +116,7 @@ const createMeetingTable = `
         bookAuthor TEXT NOT NULL,
         genre TEXT NOT NULL,
         leaderId INTEGER NOT NULL,
-        paperLink TEXT NOT NULL,
+        paperLink TEXT,
         createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -160,7 +145,6 @@ const createMeetingParticipantTable = `
 export {
     createMemberTable,
     createQuarterTable,
-    createQuarterMemoTable,
     createQuarterParticipantTable,
     createMeetingTable,
     createMeetingMemoTable,

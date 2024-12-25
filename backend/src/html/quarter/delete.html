@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Quarter</title>
+</head>
+<body>
+    <h1>Welcome to the admin page</h1>
+
+    <!-- Menu bar: Home, Quarter List, Delete Quarter -->
+    <nav>
+        <button onclick="window.location.href='/'">Home</button>
+        <br/>
+        <button onclick="window.location.href='/user/list.html'">User List</button>
+        <button onclick="window.location.href='/user/add.html'">User Add</button>
+        <button onclick="window.location.href='/user/modify.html'">User Modify</button>
+        <button onclick="window.location.href='/user/delete.html'">User Delete</button>
+        <br/>
+        <button onclick="window.location.href='/quarter/list.html'">Quarter List</button>
+        <button onclick="window.location.href='/quarter/add.html'">Add Quarter</button>
+        <button onclick="window.location.href='/quarter/modify.html'">Modify Quarter</button>
+        <button onclick="window.location.href='/quarter/delete.html'">Delete Quarter</button>
+        <br/>
+        <button onclick="window.location.href='/meeting/list.html'">Meeting List</button>
+        <button onclick="window.location.href='/meeting/add.html'">Add Meeting</button>
+        <button onclick="window.location.href='/meeting/modify.html'">Modify Meeting</button>
+        <button onclick="window.location.href='/meeting/delete.html'">Delete Meeting</button>
+    </nav>
+
+    <h2>Delete Quarter</h2>
+    <p>Click quarter to delete</p>
+
+    <ul id="quarter-list"></ul>
+
+    <script>
+        const updateQuarterList = () => {
+            // clear quarter list
+            const quarterList = document.getElementById('quarter-list');
+            while (quarterList.firstChild) {
+                quarterList.removeChild(quarterList.firstChild);
+            }
+
+            fetch('/quarters/')
+                .then(response => response.json())
+                .then(data => {
+                    const quarterList = document.getElementById('quarter-list');
+    
+                    console.log(data);
+    
+                    data.forEach(quarter => {
+                        const li = document.createElement('li');
+                        const contentString = `Year: ${quarter.year}, Quarter: ${quarter.quarter}, Memo: ${quarter.memo}`;
+                        li.textContent = contentString;
+
+                        // if this li is clicked, ask user really want to delete
+                        // then prompt user to enter quarter's year to confirm
+                        // finally, send DELETE request to /quarters/:id
+                        li.addEventListener('click', () => {
+                            alert('Quarter and every following data will be completely deleted!!');
+                            const year = prompt(`Enter quarter year to delete: ${quarter.year}`);
+                            const quarterToDelete = prompt(`Enter quarter to delete: ${quarter.quarter}`);
+                            if (year == quarter.year && quarterToDelete == quarter.quarter) {
+                                fetch(`/quarters/${quarter.id}`, {
+                                    method: 'DELETE'
+                                })
+                                .then(() => updateQuarterList());
+                            } else {
+                                alert('Year or quarter does not match');
+                            }
+                            if (year == quarter.year) {
+                                fetch(`/quarters/${quarter.id}`, {
+                                    method: 'DELETE'
+                                })
+                                updateQuarterList();
+                            }
+                            else {
+                                alert('Year does not match');
+                            }
+                        });
+
+                        quarterList.appendChild(li);
+                    });
+                });
+        }
+
+        updateQuarterList();
+    </script>
+
+</body>
+</html>

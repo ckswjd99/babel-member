@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Meeting</title>
+    <style>
+        .list-item {
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the admin page</h1>
+
+    <nav>
+        <button onclick="window.location.href='/'">Home</button>
+        <br/>
+        <button onclick="window.location.href='/user/list.html'">User List</button>
+        <button onclick="window.location.href='/user/add.html'">User Add</button>
+        <button onclick="window.location.href='/user/modify.html'">User Modify</button>
+        <button onclick="window.location.href='/user/delete.html'">User Delete</button>
+        <br/>
+        <button onclick="window.location.href='/quarter/list.html'">Quarter List</button>
+        <button onclick="window.location.href='/quarter/add.html'">Add Quarter</button>
+        <button onclick="window.location.href='/quarter/modify.html'">Modify Quarter</button>
+        <button onclick="window.location.href='/quarter/delete.html'">Delete Quarter</button>
+        <br/>
+        <button onclick="window.location.href='/meeting/list.html'">Meeting List</button>
+        <button onclick="window.location.href='/meeting/add.html'">Add Meeting</button>
+        <button onclick="window.location.href='/meeting/modify.html'">Modify Meeting</button>
+        <button onclick="window.location.href='/meeting/delete.html'">Delete Meeting</button>
+    </nav>
+
+    <h2>Add Meeting Form</h2>
+    <div id="selected-info">No quarter or leader selected yet.</div>
+    <form id="meeting-form" class="hidden">
+        <input type="hidden" id="quarterId" name="quarterId">
+        <input type="hidden" id="leaderId" name="leaderId">
+        <label for="number">Meeting Number:</label>
+        <input type="number" id="number" name="number" required><br>
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br>
+        <label for="bookName">Book Name:</label>
+        <input type="text" id="bookName" name="bookName" required><br>
+        <label for="bookAuthor">Book Author:</label>
+        <input type="text" id="bookAuthor" name="bookAuthor" required><br>
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" name="genre" required><br>
+        <label for="paperLink">Paper Link:</label>
+        <input type="url" id="paperLink" name="paperLink"><br>
+        <button type="submit">Add Meeting</button>
+    </form>
+
+    <h2>Quarter List</h2>
+    <ul id="quarters"></ul>
+
+    <h2>User List</h2>
+    <ul id="users"></ul>
+
+    <h2>Meeting List</h2>
+    <ul id="meetings"></ul>
+
+    <script>
+        let selectedQuarter = null;
+        let selectedLeader = null;
+
+        async function fetchQuarters() {
+            const response = await fetch('/quarters');
+            const quarters = await response.json();
+            const quartersUl = document.getElementById('quarters');
+            // Clear existing quarter list
+            while (quartersUl.firstChild) {
+                quartersUl.removeChild(quartersUl.firstChild);
+            }
+            quarters.forEach(quarter => {
+                const quarterLi = document.createElement('li');
+                quarterLi.className = 'list-item';
+                quarterLi.innerText = `Year: ${quarter.year}, Quarter: ${quarter.quarter}`;
+                quarterLi.onclick = () => {
+                    selectedQuarter = quarter;
+                    document.getElementById('quarterId').value = quarter.id;
+                    updateSelectedInfo();
+                    checkFormVisibility();
+                };
+                quartersUl.appendChild(quarterLi);
+            });
+            return quarters;
+        }
+
+        async function fetchUsers() {
+            const response = await fetch('/members');
+            const users = await response.json();
+            const usersUl = document.getElementById('users');
+            users.forEach(user => {
+                const userLi = document.createElement('li');
+                userLi.className = 'list-item';
+                userLi.innerText = `Name: ${user.name}`;
+                userLi.onclick = () => {
+                    selectedLeader = user;
+                    document.getElementById('leaderId').value = user.id;
+                    updateSelectedInfo();
+                    checkFormVisibility();
+                };
+                usersUl.appendChild(userLi);
+            });
+        }
+
+        async function fetchMeetings() {
+            const response = await fetch('/meetings');
+            const meetings = await response.json();
+            const quarters = await fetchQuarters();
+            const meetingsUl = document.getElementById('meetings');
+            // Clear existing meeting list
+            while (meetingsUl.firstChild) {
+                meetingsUl.removeChild(meetingsUl.firstChild);
+            }
+            meetings.forEach(meeting => {
+                const meetingLi = document.createElement('li');
+                meetingLi.className = 'list-item';
+                const quarter = quarters.find(q => q.id === meeting.quarterId);
+                const quarterInfo = quarter ? `Year: ${quarter.year}, Quarter: ${quarter.quarter}` : 'Quarter information not available';
+                meetingLi.innerText = `${quarterInfo}, Meeting ${meeting.number}: ${meeting.bookName} by ${meeting.bookAuthor} on ${meeting.date}`;
+                meetingsUl.appendChild(meetingLi);
+            });
+        }
+
+        function updateSelectedInfo() {
+            const selectedInfoDiv = document.getElementById('selected-info');
+            if (selectedQuarter && selectedLeader) {
+                selectedInfoDiv.innerText = `Selected Quarter: Year ${selectedQuarter.year}, Quarter ${selectedQuarter.quarter}, Selected Leader: ${selectedLeader.name}`;
+            } else if (selectedQuarter) {
+                selectedInfoDiv.innerText = `Selected Quarter: Year ${selectedQuarter.year}, Quarter ${selectedQuarter.quarter}, No leader selected yet.`;
+            } else if (selectedLeader) {
+                selectedInfoDiv.innerText = `No quarter selected yet, Selected Leader: ${selectedLeader.name}`;
+            } else {
+                selectedInfoDiv.innerText = `No quarter or leader selected yet.`;
+            }
+        }
+
+        function checkFormVisibility() {
+            const form = document.getElementById('meeting-form');
+            if (selectedQuarter && selectedLeader) {
+                form.classList.remove('hidden');
+            } else {
+                form.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('meeting-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const meetingData = {
+                quarterId: formData.get('quarterId'),
+                leaderId: formData.get('leaderId'),
+                number: formData.get('number'),
+                date: formData.get('date'),
+                bookName: formData.get('bookName'),
+                bookAuthor: formData.get('bookAuthor'),
+                genre: formData.get('genre'),
+                paperLink: formData.get('paperLink')
+            };
+            const response = await fetch('/meetings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(meetingData)
+            });
+            if (response.ok) {
+                alert('Meeting added successfully');
+                event.target.reset();
+                selectedQuarter = null;
+                selectedLeader = null;
+                updateSelectedInfo();
+                checkFormVisibility();
+                fetchMeetings(); // Update the meeting list after adding a new meeting
+            } else {
+                alert('Error adding meeting');
+            }
+        });
+
+        fetchQuarters();
+        fetchUsers();
+        fetchMeetings(); // Fetch and display the meeting list on page load
+    </script>
+</body>
+</html>

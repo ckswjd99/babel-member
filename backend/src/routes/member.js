@@ -34,8 +34,16 @@ class MemberRouter {
         });
 
         router.get('/:id', async (req, res) => {
-            const member = await this.dbManager.getMemberById(req.params.id);
-            res.json(member);
+            try {
+                const member = await this.dbManager.getDetailedMemberById(req.params.id);
+                if (member) {
+                    res.json(member);
+                } else {
+                    res.status(404).json({ error: 'Member not found' });
+                }
+            } catch (error) {
+                res.status(500).json({ error: error.message });
+            }
         });
 
         router.post('/', async (req, res) => {
