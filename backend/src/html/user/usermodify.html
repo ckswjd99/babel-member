@@ -1,0 +1,177 @@
+
+<!-- 
+/**
+* GET /members: get all members matching query, or all members if no query
+* GET /members/:id: get member with id
+* POST /members: create new member, data given in request body
+* PUT /members/:id: update member with id, data given in request body
+* DELETE /members/:id: delete member with id
+* 
+* Every queries should be given to manager methods in a object form (column-name: value)
+* 
+* Member columns: name, gender, birthyear, job, major, speciality1, speciality2, funnel,
+* bookInteresting, bookRecently, purpose, everBookClub, memo, enrolledAt
+*/ 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Welcome to the admin page</h1>
+
+    <!-- Menu bar: User List, User Add, User Modify, User Delete -->
+    <nav>
+        <button onclick="window.location.href='/user/userlist.html'">User List</button>
+        <button onclick="window.location.href='/user/useradd.html'">User Add</button>
+        <button onclick="window.location.href='/user/usermodify.html'">User Modify</button>
+        <button onclick="window.location.href='/user/userdelete.html'">User Delete</button>
+    </nav>
+
+    <h2>Modify User</h2>
+
+    <form id="modify-user-form" method="put" action="/members">
+        <label for="id">ID:</label>
+        <input type="number" id="id" name="id" required><br>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="grade">Grade:</label>
+        <input type="text" id="grade" name="grade" required><br>
+
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="남자">남자</option>
+            <option value="여자">여자</option>
+            <option value="무응답">무응답</option>
+        </select><br>
+
+        <label for="birthyear">Birth Year:</label>
+        <input type="number" id="birthyear" name="birthyear" required><br>
+
+        <label for="job">Job:</label>
+        <input type="text" id="job" name="job" required><br>
+
+        <label for="major">Major:</label>
+        <input type="text" id="major" name="major" required><br>
+
+        <label for="speciality1">Speciality 1:</label>
+        <select id="speciality1" name="speciality1" required>
+            <option value="인문">인문</option>
+            <option value="사회">사회</option>
+            <option value="예술">예술</option>
+            <option value="경제/경영">경제/경영</option>
+            <option value="문학">문학</option>
+            <option value="자연과학/공학/의약학">자연과학/공학/의약학</option>
+        </select><br>
+
+        <label for="speciality2">Speciality 2:</label>
+        <select id="speciality2" name="speciality2" required>
+            <option value="인문">인문</option>
+            <option value="사회">사회</option>
+            <option value="예술">예술</option>
+            <option value="경제/경영">경제/경영</option>
+            <option value="문학">문학</option>
+            <option value="자연과학/공학/의약학">자연과학/공학/의약학</option>
+        </select><br>
+
+        <label for="funnel">Funnel:</label>
+        <input type="text" id="funnel" name="funnel" required><br>
+
+        <label for="bookInteresting">Book Interesting:</label>
+        <input type="text" id="bookInteresting" name="bookInteresting" required><br>
+
+        <label for="bookRecently">Book Recently:</label>
+        <input type="text" id="bookRecently" name="bookRecently" required><br>
+
+        <label for="purpose">Purpose:</label>
+        <input type="text" id="purpose" name="purpose" required><br>
+
+        <label for="everBookClub">Ever Book Club:</label>
+        <input type="text" id="everBookClub" name="everBookClub" required><br>
+
+        <label for="memo">Memo:</label>
+        <textarea id="memo" name="memo"></textarea><br>
+
+        <label for="enrolledAt">Enrolled At:</label>
+        <input type="date" id="enrolledAt" name="enrolledAt" required><br>
+
+        <button id="modify-user-submit" type="submit">Update User Info</button>
+    </form>
+    
+    <h2>User List</h2>
+    <p>Click member to modify</p>
+    
+    <ul id="user-list">
+    </ul>
+
+    <script>
+        const updateUserList = () => {
+            // clear user list
+            const userList = document.getElementById('user-list');
+            while (userList.firstChild) {
+                userList.removeChild(userList.firstChild);
+            }
+
+            fetch('/members/')
+                .then(response => response.json())
+                .then(data => {
+                    const userList = document.getElementById('user-list');
+    
+                    console.log(data);
+    
+                    data.forEach(user => {
+                        const li = document.createElement('li');
+                        const contentString = `ID: ${user.id}, Name: ${user.name}, Gender: ${user.gender}, Grade: ${user.grade}, Birthyear: ${user.birthyear}`
+                        li.textContent = contentString;
+
+                        // if this li is clicked, fill the form with this user's data
+                        li.addEventListener('click', () => {
+                            const addUserForm = document.getElementById('modify-user-form');
+                            for (const key in user) {
+                                if (addUserForm[key]) {
+                                    addUserForm[key].value = user[key];
+                                }
+                            }
+                        });
+
+                        userList.appendChild(li);
+                    });
+                });
+        }
+        
+        const addUserForm = document.getElementById('modify-user-form');
+        const addUserSubmit = document.getElementById('modify-user-submit');
+
+        addUserForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(addUserForm);
+            const data = {};
+
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+
+            fetch(`/members/${data.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+
+            // clear form
+            addUserForm.reset();
+            updateUserList();
+        });
+
+        updateUserList();
+    </script>
+
+</body>
+</html>

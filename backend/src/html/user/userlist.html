@@ -1,0 +1,97 @@
+
+<!-- 
+/**
+* GET /members: get all members matching query, or all members if no query
+* GET /members/:id: get member with id
+* POST /members: create new member, data given in request body
+* PUT /members/:id: update member with id, data given in request body
+* DELETE /members/:id: delete member with id
+* 
+* Every queries should be given to manager methods in a object form (column-name: value)
+* 
+* Member columns: name, gender, birthyear, job, major, speciality1, speciality2, funnel,
+* bookInteresting, bookRecently, purpose, everBookClub, memo, enrolledAt
+*/ 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Welcome to the admin page</h1>
+
+    <!-- Menu bar: User List, User Add, User Modify, User Delete -->
+    <nav>
+        <button onclick="window.location.href='/user/userlist.html'">User List</button>
+        <button onclick="window.location.href='/user/useradd.html'">User Add</button>
+        <button onclick="window.location.href='/user/usermodify.html'">User Modify</button>
+        <button onclick="window.location.href='/user/userdelete.html'">User Delete</button>
+    </nav>
+
+    <h2>User List</h2>
+    <form onsubmit="event.preventDefault(); searchByName();">
+        <label for="search-name">Search by name:</label>
+        <input type="text" id="search-name" name="search-name">
+        <button type="submit">Search</button>
+    </form>
+
+    <script>
+        const searchByName = () => {
+            const name = document.getElementById('search-name').value;
+            const query = name ? `/members?name=${name}` : '/members';
+            fetch(query)
+                .then(response => response.json())
+                .then(data => {
+                    const userList = document.getElementById('user-list');
+                    while (userList.firstChild) {
+                        userList.removeChild(userList.firstChild);
+                    }
+
+                    data.forEach(user => {
+                        const li = document.createElement('li');
+                        const contentString = `ID: ${user.id}, Name: ${user.name}, Gender: ${user.gender}, Grade: ${user.grade}, Birthyear: ${user.birthyear}`;
+                        li.textContent = contentString;
+
+                        userList.appendChild(li);
+                    });
+                });
+        }
+    </script>
+            
+    <ul id="user-list">
+    </ul>
+
+
+    <script>
+        const updateUserList = () => {
+            // clear user list
+            const userList = document.getElementById('user-list');
+            while (userList.firstChild) {
+                userList.removeChild(userList.firstChild);
+            }
+
+            fetch('/members/')
+                .then(response => response.json())
+                .then(data => {
+                    const userList = document.getElementById('user-list');
+    
+                    console.log(data);
+    
+                    data.forEach(user => {
+                        const li = document.createElement('li');
+                        const contentString = `ID: ${user.id}, Name: ${user.name}, Gender: ${user.gender}, Grade: ${user.grade}, Birthyear: ${user.birthyear}`
+                        li.textContent = contentString;
+
+                        userList.appendChild(li);
+                    });
+                });
+        }
+        
+        updateUserList();
+    </script>
+
+</body>
+</html>
